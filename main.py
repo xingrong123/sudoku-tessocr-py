@@ -8,11 +8,23 @@ pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesse
 conf = r'--oem 3 --psm 6 -c tessedit_char_whitelist=0123456789'
 
 
-def hello(name):
+def drawBox(checkedImage, originalImage, box, hImg):
+    box = box.split(' ')
+    x, y, w, h = int(box[1]), int(box[2]), int(box[3]), int(box[4])
+
+    cv2.rectangle(checkedImage, (x, hImg-y),
+                  (w, hImg-h), (255, 255, 255), -1)
+    cv2.rectangle(originalImage, (x, hImg-y), (w, hImg-h), (0, 0, 255), 1)
+    cv2.putText(originalImage, box[0], (x, hImg-y+20),
+                cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 255), 2)
+
+
+def readImage(name):
+
     link = './images/' + name + '.png'
     original_image = cv2.imread(link)
-    image = original_image.copy()
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    processedImage = original_image.copy()
+    gray = cv2.cvtColor(processedImage, cv2.COLOR_BGR2GRAY)
     thresh = cv2.threshold(
         gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
 
@@ -24,7 +36,7 @@ def hello(name):
         detected_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
     for c in cnts:
-        cv2.drawContours(image, [c], -1, (255, 255, 255), 2)
+        cv2.drawContours(processedImage, [c], -1, (255, 255, 255), 2)
 
     # removing horizontal lines from image
     horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
@@ -34,67 +46,53 @@ def hello(name):
         detected_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
     for c in cnts:
-        cv2.drawContours(image, [c], -1, (255, 255, 255), 2)
+        cv2.drawContours(processedImage, [c], -1, (255, 255, 255), 2)
 
-    thresh = 174
-    helloimage = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)[1]
+    thresh = 175
+    processedImage = cv2.threshold(
+        processedImage, thresh, 255, cv2.THRESH_BINARY)[1]
 
-    helloimage = cv2.cvtColor(helloimage, cv2.COLOR_BGR2RGB)
-    checkedImage = helloimage.copy()
-    hImg, wImg = helloimage.shape[0], helloimage.shape[1]
+    processedImage = cv2.cvtColor(processedImage, cv2.COLOR_BGR2RGB)
+    checked_image = processedImage.copy()
+    hImg, wImg = processedImage.shape[0], processedImage.shape[1]
 
     # print(pytesseract.image_to_string(image, config=conf))
 
-    boxes = pytesseract.image_to_boxes(helloimage, config=conf)
 
     print(name)
 
-    # print('height = {hImg}, width = {wImg}'.format(hImg=hImg, wImg=wImg))
-
+    boxes = pytesseract.image_to_boxes(processedImage, config=conf)
     for box in boxes.splitlines():
-        box = box.split(' ')
-        x, y, w, h = int(box[1]), int(box[2]), int(box[3]), int(box[4])
-
-        cv2.rectangle(checkedImage, (x, hImg-y),
-                      (w, hImg-h), (255, 255, 255), -1)
-        cv2.rectangle(original_image, (x, hImg-y), (w, hImg-h), (0, 0, 255), 1)
-        cv2.putText(original_image, box[0], (x, hImg-y+20),
-                    cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 255), 2)
-    if np.mean(checkedImage) <= 254.9:
+        drawBox(checked_image, original_image, box, hImg)
+        
+    # checked_image would be a full white image if all numbers are detected
+    # below checks if checked_image is white
+    if np.mean(checked_image) <= 254.9:
         for num in range(3):
-            newBoxes = pytesseract.image_to_boxes(checkedImage, config=conf)
+            newBoxes = pytesseract.image_to_boxes(checked_image, config=conf)
             for newBox in newBoxes.splitlines():
-                newBox = newBox.split(' ')
-                x, y, w, h = int(newBox[1]), int(
-                    newBox[2]), int(newBox[3]), int(newBox[4])
+                drawBox(checked_image, original_image, newBox, hImg)
 
-                cv2.rectangle(checkedImage, (x, hImg-y),
-                              (w, hImg-h), (255, 255, 255), -1)
-                cv2.rectangle(original_image, (x, hImg-y), (w, hImg-h), (0, 0, 255), 1)
-                cv2.putText(original_image, newBox[0], (x, hImg-y+20),
-                            cv2.FONT_HERSHEY_COMPLEX, 1, (50, 50, 255), 2)
-            if np.mean(checkedImage) > 254.9:
+            if np.mean(checked_image) > 254.9:
                 break
-            checkedImage = cv2.erode(checkedImage, (3,3), iterations=1)
-            cv2.imshow(name + str(num), checkedImage)
+            checked_image = cv2.erode(checked_image, (3, 3), iterations=1)
 
-        if np.mean(checkedImage) <= 254.9:
-            print(np.mean(checkedImage))
+        if np.mean(checked_image) <= 254.9:
+            print(np.mean(checked_image))
             print("error")
 
     cv2.imshow(name, original_image)
-    cv2.imshow(name + " check", checkedImage)
-    # cv2.imshow(name + " gray", gray)
+    cv2.imshow(name + " check", checked_image)
 
 
-hello('sudokuEasy1')
-hello('sudokuEasy2')
-hello('sudokuMedium1')
-hello('sudokuMedium2')
-hello('sudokuHard1')
-hello('sudokuHard2')
-hello('sudokuExpert1')
-hello('sudokuExpert2')
+readImage('sudokuEasy1')
+readImage('sudokuEasy2')
+readImage('sudokuMedium1')
+readImage('sudokuMedium2')
+readImage('sudokuHard1')
+readImage('sudokuHard2')
+readImage('sudokuExpert1')
+readImage('sudokuExpert2')
 
 
 cv2.waitKey(0)
