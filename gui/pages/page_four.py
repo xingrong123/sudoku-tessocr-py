@@ -30,6 +30,6 @@ class Page4(Page):
         f2.close()
         if self.is_send_query is True:
             Label(self, text="query has been sent to heroku db").grid(row=4, column=1)
-            os.system("heroku pg:psql -- app sudoku-react-application < sudoku2.sql")
+            os.system("heroku pg:psql --app sudoku-react-application < sudoku2.sql")
         os.remove("sudoku2.sql")
         print("done")
