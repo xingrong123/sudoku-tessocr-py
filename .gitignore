@@ -1,9 +1,11 @@
 *.pyc
+*.spec
+*.sql
 
 training_1
+dist
+build
 
 initiateModel.py
 loadModel.py
 read.py
-
-*.sql
