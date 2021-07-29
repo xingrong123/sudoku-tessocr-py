@@ -28,7 +28,7 @@ def screenShot():
     print(new_ss_list)
     for filename in new_ss_list:
         try:
-            puzzle_list = readImage(filename)
+            puzzle_list, image = readImage(filename)
             print(puzzle_list)
         except ValueError as err:
             print(err.args)

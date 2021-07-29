@@ -1,5 +1,3 @@
-from typing import DefaultDict
-from warnings import catch_warnings
 import cv2
 import pytesseract
 import numpy as np
@@ -9,7 +7,7 @@ from os.path import isfile, join
 
 pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 # config to filter digits
-conf = r'--oem 3 --psm 6 -c tessedit_char_whitelist=0123456789'
+conf = r'--oem 3 --psm 6 -c tessedit_char_whitelist=123456789'
 
 
 def get_index(h_puzzle, w_puzzle, h_start, w_start, x, y, w, h):
@@ -92,7 +90,7 @@ def process_image(image):
 
 def format_puzzle_list(puzzle_list):
 
-    puzzle_str = "["
+    puzzle_str = "{"
 
     for item in puzzle_list:
         try:
@@ -109,34 +107,34 @@ def format_puzzle_list(puzzle_list):
                 '9': "9,"
             }[item]
         except:
-            raise ValueError("invalid value detected in puzzle list", item)
+            raise ValueError("invalid value in puzzle list detected", item)
 
         # match statement for python 3.10
         # match item:
         #     case None:
-        #         str = str + "null,"
+        #         puzzle_str = puzzle_str + "null,"
         #     case "1":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "2":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "3":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "4":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "5":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "6":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "7":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "8":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case "9":
-        #         str = str + item + ","
+        #         puzzle_str = puzzle_str + item + ","
         #     case _:
-        #         raise ValueError("unknown value in puzzle list")
+        #         raise ValueError("invalid value in puzzle list detected", item)
     
-    return puzzle_str[:-1] + "]"
+    return puzzle_str[:-1] + "}"
 
 
 
@@ -180,7 +178,8 @@ def readImage(name):
 
     # print(puzzle_list)
     # cv2.imshow(name, original_image)
-    return format_puzzle_list(puzzle_list)
+    original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
+    return format_puzzle_list(puzzle_list), original_image
     # cv2.imshow(name + " check", processedImage)
 
 
@@ -189,7 +188,7 @@ def main():
     onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
     for filename in onlyfiles:
         try:
-            puzzle_list = readImage(filename)
+            puzzle_list, image = readImage(filename)
             print(puzzle_list)
         except ValueError as err:
             print(err.args)

@@ -1,0 +1,3 @@
+INSERT INTO sudoku_puzzles(puzzle, difficulty) VALUES 
+('{null,4,3,null,null,5,6,8,7,null,6,null,null,2,null,null,1,null,null,9,null,null,8,3,null,null,null,null,null,null,null,null,null,3,4,null,1,null,8,null,4,9,7,2,null,null,null,null,2,5,null,null,null,null,null,8,6,1,null,2,null,null,null,null,null,null,7,null,null,null,3,8,null,null,7,null,null,null,null,null,null}', 'medium'),
+('{6,null,8,null,null,null,null,5,null,null,null,null,null,4,null,null,null,null,null,null,null,5,null,8,null,null,3,null,2,null,null,null,null,4,null,null,null,4,null,2,null,null,5,3,8,null,8,null,null,null,null,null,6,null,null,1,7,null,2,6,null,4,null,null,9,null,8,null,null,7,null,6,2,6,null,null,7,3,null,9,null}', 'easy');
